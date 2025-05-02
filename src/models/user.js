@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const validator = require("validator");
 
 const userSchema = new mongoose.Schema(
 	{
@@ -11,9 +12,24 @@ const userSchema = new mongoose.Schema(
 			enum: ["donor", "needy", "admin"],
 			required: true,
 		},
+		password: {
+			type: String,
+			required: true,
+		},
 		phone: {
 			type: String,
 			required: true,
+		},
+		emailId: {
+			type: String,
+			unique: true,
+			lowercase: true,
+			trim: true,
+			validate(value) {
+				if (validator.isEmail(value)) {
+					throw new Error("Invalid email address");
+				}
+			},
 		},
 		location: {
 			type: { type: String, enum: ["Point"], default: "Point" },

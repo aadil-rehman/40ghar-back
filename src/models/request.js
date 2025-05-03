@@ -43,6 +43,8 @@ const requestSchema = new mongoose.Schema(
 	{ timestamps: true }
 );
 
+requestSchema.index({ location: "2dsphere" });
+
 const Request = mongoose.model("Request", requestSchema);
 
 module.exports = Request;

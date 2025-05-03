@@ -71,4 +71,33 @@ requestRouter.patch(
 	}
 );
 
+requestRouter.get("/all", userAuth, async (req, res) => {
+	try {
+		const lat = req.query.lat;
+		const lng = req.query.lng;
+
+		if (!lat || !lng) {
+			return res.status(400).json({ error: "Missing lat or lng parameters" });
+		}
+
+		const donorCoords = [Number(lng), Number(lat)];
+
+		const requests = await Request.find({
+			location: {
+				$near: {
+					$geometry: {
+						type: "Point",
+						coordinates: donorCoords,
+					},
+					$maxDistance: 1000,
+				},
+			},
+		});
+
+		res.json({ message: "Requests fetched successfully", data: requests });
+	} catch (err) {
+		res.status(400).json({ error: err.message });
+	}
+});
+
 module.exports = requestRouter;

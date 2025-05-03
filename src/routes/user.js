@@ -52,7 +52,7 @@ userRouter.post("/login", async (req, res) => {
 			res.cookie("token", token, {
 				expires: new Date(Date.now() + 8 * 3600000),
 			});
-			res.json({ message: "Login successfull!", data: user });
+			res.json({ status: 1, message: "Login successfull!", data: user });
 		} else {
 			throw new Error("Invalid credentials");
 		}

@@ -1,11 +1,12 @@
 const User = require("../models/user");
+const jwt = require("jsonwebtoken");
 
 const userAuth = async (req, res, next) => {
 	try {
-		const { token } = req.cookie;
+		const { token } = req.cookies;
 
 		if (!token) {
-			return res.json(401).json({ error: "Please login" });
+			return res.status(401).json({ error: "Please login" });
 		}
 
 		//validate token

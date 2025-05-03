@@ -13,7 +13,6 @@ userRouter.post("/signup", async (req, res) => {
 
 		//Encrypt password
 		const passwordHash = await bcrypt.hash(password, 10);
-		console.log(emailId);
 
 		const user = new User({
 			name,

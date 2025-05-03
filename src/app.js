@@ -1,10 +1,13 @@
 const express = require("express");
 const mongoDBConnect = require("./config/databse");
+const cookieParser = require("cookie-parser");
 require("dotenv").config();
 
 const app = express();
-app.use(express.json());
 const PORT = 3000;
+
+app.use(express.json());
+app.use(cookieParser());
 
 const userRouter = require("./routes/user");
 const requestRouter = require("./routes/request");

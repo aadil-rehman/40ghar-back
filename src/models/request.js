@@ -15,6 +15,8 @@ const requestSchema = new mongoose.Schema(
 		familySize: {
 			type: Number,
 			required: true,
+			min: [1, "Family size must be at least 1"],
+			max: [20, "Family size must not exceed 20"],
 		},
 		description: {
 			type: String,
@@ -24,6 +26,10 @@ const requestSchema = new mongoose.Schema(
 			// Prioritize widow requests first
 			type: Boolean,
 			default: false,
+		},
+		address: {
+			type: String,
+			required: true,
 		},
 		urgencyScore: Number,
 		status: {

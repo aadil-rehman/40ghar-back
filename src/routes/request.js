@@ -2,12 +2,14 @@ const express = require("express");
 const Request = require("../models/request");
 const userAuth = require("../middlewares/auth");
 const User = require("../models/user");
+const { addLocationNoise } = require("../utils/commonFunctions");
 
 const requestRouter = express.Router();
 
 requestRouter.post("/new", userAuth, async (req, res) => {
 	try {
-		const { needType, familySize, description, location, widow } = req.body;
+		const { needType, familySize, description, location, widow, address } =
+			req.body;
 
 		const loggedinUser = req.user;
 
@@ -19,11 +21,12 @@ requestRouter.post("/new", userAuth, async (req, res) => {
 
 		const request = new Request({
 			needType,
-			userId,
+			userId: loggedinUser._id,
 			familySize,
 			description,
 			widow,
 			location,
+			address,
 		});
 		await request.save();
 		res.json({
@@ -82,6 +85,7 @@ requestRouter.get("/all", userAuth, async (req, res) => {
 
 		const donorCoords = [Number(lng), Number(lat)];
 
+		//fetch the requests with exact coordinates
 		const requests = await Request.find({
 			location: {
 				$near: {
@@ -94,7 +98,51 @@ requestRouter.get("/all", userAuth, async (req, res) => {
 			},
 		});
 
-		res.json({ message: "Requests fetched successfully", data: requests });
+		//send requests to client after adding noise to coordinates
+		const requestsWithNoiseLocations = requests.map((request) => {
+			//Convert the Mongoose document to a plain JavaScript object
+			const plain = request.toObject();
+
+			const fuzzy = addLocationNoise(
+				request.location.coordinates[0],
+				request.location.coordinates[1]
+			);
+
+			return {
+				...plain,
+				location: {
+					...plain.location,
+					coordinates: [fuzzy.lat, fuzzy.lng],
+				},
+			};
+		});
+
+		res.json({
+			message: "Requests fetched successfully",
+			data: requestsWithNoiseLocations,
+		});
+	} catch (err) {
+		res.status(400).json({ error: err.message });
+	}
+});
+
+//request raised by single needy
+requestRouter.get("/myRequests", userAuth, async (req, res) => {
+	const loggedinUser = req.user;
+
+	try {
+		if (loggedinUser.role !== "needy") {
+			throw new Error("Only needy can see all his requests");
+		}
+
+		const requests = await Request.find({
+			userId: loggedinUser._id,
+		}).select("needType familySize description address status");
+
+		res.json({
+			message: "Requests raised by user fetched successfully",
+			data: requests,
+		});
 	} catch (err) {
 		res.status(400).json({ error: err.message });
 	}

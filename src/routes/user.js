@@ -10,7 +10,8 @@ const userRouter = express.Router();
 userRouter.post("/signup", async (req, res) => {
 	try {
 		validateSignUpData(req);
-		const { name, role, phone, emailId, location, password } = req.body;
+		const { name, role, phone, emailId, location, password, address } =
+			req.body;
 
 		//Encrypt password
 		const passwordHash = await bcrypt.hash(password, 10);
@@ -21,11 +22,16 @@ userRouter.post("/signup", async (req, res) => {
 			password: passwordHash,
 			phone,
 			location,
+			address,
 			...(emailId ? { emailId } : {}),
 		});
 		await user.save();
 
-		res.json(user);
+		res.json({
+			status: 1,
+			message: "User registered successfully",
+			data: user,
+		});
 	} catch (err) {
 		res.status(400).json({ error: err.message });
 	}

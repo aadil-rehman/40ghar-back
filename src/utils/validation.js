@@ -1,7 +1,7 @@
 const validator = require("validator");
 
 const validateSignUpData = (req) => {
-	const { name, role, phone, emailId, location, password } = req.body;
+	const { name, role, phone, emailId, location, password, address } = req.body;
 
 	if (!name) {
 		throw new Error("Name is required");
@@ -9,6 +9,8 @@ const validateSignUpData = (req) => {
 		throw new Error("Phone is required");
 	} else if (!password) {
 		throw new Error("Password is required");
+	} else if (!address) {
+		throw new Error("Address is required");
 	} else if (emailId && !validator.isEmail(emailId)) {
 		throw new Error("Invalid email address");
 	}

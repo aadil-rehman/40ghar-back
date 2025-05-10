@@ -7,7 +7,12 @@ const requestSchema = new mongoose.Schema(
 			enum: ["ration", "medicine", "cloths", "others"],
 			required: true,
 		},
-		userId: {
+		needyUserId: {
+			type: mongoose.Schema.Types.ObjectId,
+			ref: "User",
+			required: true,
+		},
+		donorUserId: {
 			type: mongoose.Schema.Types.ObjectId,
 			ref: "User",
 			required: true,

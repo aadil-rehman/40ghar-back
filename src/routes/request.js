@@ -40,11 +40,11 @@ requestRouter.post("/new", userAuth, async (req, res) => {
 });
 
 requestRouter.patch(
-	"/action/:status/:requestId",
+	"/action/:status/:requestId/:donorUserId",
 	userAuth,
 	async (req, res) => {
 		try {
-			const { status, requestId } = req.params;
+			const { status, requestId, donorUserId } = req.params;
 
 			const loggedinUser = req.user;
 			const loggedinUserRole = loggedinUser.role;
@@ -52,16 +52,35 @@ requestRouter.patch(
 			if (loggedinUserRole !== "donor") {
 				throw new Error("Only donor can update status");
 			}
+			const allowedStatuses = [
+				"pending",
+				"in_progress",
+				"fulfilled",
+				"flagged",
+			];
+			if (!allowedStatuses.includes(status)) {
+				throw new Error("Invalid status value");
+			}
 
-			const request = await Request.findById(requestId);
+			const donorExists = await User.findById(donorUserId);
+			if (!donorExists) {
+				throw new Error("Donor not found");
+			}
+
+			const request = await Request.findByIdAndUpdate(
+				requestId,
+				{
+					$set: {
+						status,
+						donorUserId,
+					},
+				},
+				{ new: true, runValidators: true }
+			);
 
 			if (!request) {
 				throw new Error("Request not found!");
 			}
-
-			request.status = status;
-
-			await request.save();
 
 			res.json({
 				status: 1,
@@ -96,7 +115,7 @@ requestRouter.get("/all", userAuth, async (req, res) => {
 					$maxDistance: 1000,
 				},
 			},
-		});
+		}).populate("donorUserId", "name");
 
 		//send requests to client after adding noise to coordinates
 		const requestsWithNoiseLocations = requests.map((request) => {

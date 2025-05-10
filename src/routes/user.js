@@ -3,6 +3,7 @@ const User = require("../models/user");
 const { validateSignUpData } = require("../utils/validation");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const userAuth = require("../middlewares/auth");
 
 const userRouter = express.Router();
 
@@ -56,6 +57,16 @@ userRouter.post("/login", async (req, res) => {
 		} else {
 			throw new Error("Invalid credentials");
 		}
+	} catch (err) {
+		res.status(400).json({ error: err.message });
+	}
+});
+
+userRouter.get("/profile", userAuth, async (req, res) => {
+	try {
+		const loggedInUser = req.user;
+
+		res.json({ message: "User fetched Successfullly", data: loggedInUser });
 	} catch (err) {
 		res.status(400).json({ error: err.message });
 	}

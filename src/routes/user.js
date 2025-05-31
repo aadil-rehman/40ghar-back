@@ -7,26 +7,27 @@ const userAuth = require("../middlewares/auth");
 
 const userRouter = express.Router();
 
-userRouter.post("/signup", async (req, res) => {
+userRouter.post("/donor-signup", async (req, res) => {
 	try {
 		validateSignUpData(req);
 		const { name, role, phone, emailId, location, password, address } =
 			req.body;
 
-		//Encrypt password
-		let passwordHash;
-		if (role === "donor" && password) {
-			passwordHash = await bcrypt.hash(password, 10);
+		if (role !== "donor") {
+			throw new Error("User is not allowed to signup via Email");
 		}
+
+		//Encrypt password
+		const passwordHash = await bcrypt.hash(password, 10);
 
 		const userData = {
 			name,
 			role,
-			phone,
+			...(phone ? { phone } : {}),
 			location,
 			address,
-			...(role === "donor" ? { password: passwordHash } : {}),
-			...(role === "donor" ? { emailId } : {}),
+			password: passwordHash,
+			emailId,
 		};
 
 		const user = new User(userData);
@@ -42,14 +43,18 @@ userRouter.post("/signup", async (req, res) => {
 	}
 });
 
-userRouter.post("/login", async (req, res) => {
+userRouter.post("/donor-login", async (req, res) => {
 	try {
-		const { emailId, password } = req.body;
+		const { emailId, password, role } = req.body;
 
-		const user = await User.findOne({ emailId: emailId });
+		if (role !== "donor") {
+			throw new Error("User is not allowed to login via Email");
+		}
+
+		const user = await User.findOne({ emailId: emailId, role });
 
 		if (!user) {
-			throw new Error("Invalid Credentials");
+			throw new Error("User not found");
 		}
 
 		const validatePassword = await bcrypt.compare(password, user.password);

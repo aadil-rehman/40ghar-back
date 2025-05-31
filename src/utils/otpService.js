@@ -10,11 +10,12 @@ const sendOtp = async (phone) => {
 	try {
 		const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-		const expiry = new Date(Date.now() + 2 * 60 * 1000); //2 minutes
+		const expiry = new Date(Date.now() + 5 * 60 * 1000); //2 minutes
 
 		await Otp.findOneAndUpdate(
-			{ phone, otp, expiresAt: expiry },
-			{ upsert: true, new: true }
+			{ phone },
+			{ otp, expiresAt: expiry },
+			{ upsert: true, new: true, setDefaultsOnInsert: true }
 		);
 
 		await client.messages.create({
@@ -30,9 +31,9 @@ const sendOtp = async (phone) => {
 const verifyOtp = async (phone, otp) => {
 	const record = await Otp.findOne({ phone });
 
-	if (!record || record.expiresAt < new Date()) return false;
-
-	return (record.otp = otp);
-};	
+	// if (!record || record.expiresAt < new Date()) return false;
+	if (!record) return false;
+	return record.otp === otp;
+};
 
 module.exports = { sendOtp, verifyOtp };

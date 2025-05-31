@@ -7,6 +7,14 @@ const validateSignUpData = (req) => {
 		throw new Error("User role is required.");
 	}
 
+	const allowedRoles = ["admin", "needy", "donor"];
+
+	const isRoleValid = allowedRoles.includes(role);
+
+	if (!isRoleValid) {
+		throw new Error("Role is not valid");
+	}
+
 	if (!name) {
 		throw new Error("Name is required");
 	}
@@ -23,14 +31,6 @@ const validateSignUpData = (req) => {
 	}
 	if (role === "donor" && !validator.isEmail(emailId)) {
 		throw new Error("Invalid email address");
-	}
-
-	const allowedRoles = ["admin", "needy", "donor"];
-
-	const isRoleValid = allowedRoles.includes(role);
-
-	if (!isRoleValid) {
-		throw new Error("Role is not valid");
 	}
 
 	if (

@@ -18,9 +18,11 @@ app.use(cookieParser());
 
 const userRouter = require("./routes/user");
 const requestRouter = require("./routes/request");
+const otpRouter = require("./routes/otp");
 
 app.use("/", userRouter);
 app.use("/request", requestRouter);
+app.use("/otp", otpRouter);
 
 mongoDBConnect()
 	.then(() => {

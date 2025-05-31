@@ -35,7 +35,7 @@ requestRouter.post("/new", userAuth, async (req, res) => {
 			data: request,
 		});
 	} catch (err) {
-		res.status(400).json({ error: err.message });
+		res.status(400).json({ status: 0, message: err.message });
 	}
 });
 
@@ -88,7 +88,7 @@ requestRouter.patch(
 				data: request,
 			});
 		} catch (err) {
-			res.status(400).json({ error: err.message });
+			res.status(400).json({ status: 0, message: err.message });
 		}
 	}
 );
@@ -97,6 +97,7 @@ requestRouter.get("/all", userAuth, async (req, res) => {
 	try {
 		const lat = req.query.lat;
 		const lng = req.query.lng;
+		const range = req.query.range;
 
 		if (!lat || !lng) {
 			return res.status(400).json({ error: "Missing lat or lng parameters" });
@@ -112,7 +113,7 @@ requestRouter.get("/all", userAuth, async (req, res) => {
 						type: "Point",
 						coordinates: donorCoords,
 					},
-					$maxDistance: 1000,
+					$maxDistance: range,
 				},
 			},
 		}).populate("donorUserId", "name");
@@ -137,11 +138,12 @@ requestRouter.get("/all", userAuth, async (req, res) => {
 		});
 
 		res.json({
+			status: 1,
 			message: "Requests fetched successfully",
 			data: requestsWithNoiseLocations,
 		});
 	} catch (err) {
-		res.status(400).json({ error: err.message });
+		res.status(400).json({ status: 0, message: err.message });
 	}
 });
 
@@ -159,11 +161,12 @@ requestRouter.get("/myRequests", userAuth, async (req, res) => {
 		}).select("needType familySize description address status");
 
 		res.json({
+			status: 1,
 			message: "Requests raised by user fetched successfully",
 			data: requests,
 		});
 	} catch (err) {
-		res.status(400).json({ error: err.message });
+		res.status(400).json({ status: 0, message: err.message });
 	}
 });
 

@@ -14,17 +14,22 @@ userRouter.post("/signup", async (req, res) => {
 			req.body;
 
 		//Encrypt password
-		const passwordHash = await bcrypt.hash(password, 10);
+		let passwordHash;
+		if (role === "donor" && password) {
+			passwordHash = await bcrypt.hash(password, 10);
+		}
 
-		const user = new User({
+		const userData = {
 			name,
 			role,
-			password: passwordHash,
 			phone,
 			location,
 			address,
-			...(emailId ? { emailId } : {}),
-		});
+			...(role === "donor" ? { password: passwordHash } : {}),
+			...(role === "donor" ? { emailId } : {}),
+		};
+
+		const user = new User(userData);
 		await user.save();
 
 		res.json({
@@ -33,7 +38,7 @@ userRouter.post("/signup", async (req, res) => {
 			data: user,
 		});
 	} catch (err) {
-		res.status(400).json({ error: err.message });
+		res.status(400).json({ status: 0, message: err.message });
 	}
 });
 
@@ -64,7 +69,7 @@ userRouter.post("/login", async (req, res) => {
 			throw new Error("Invalid Credentials");
 		}
 	} catch (err) {
-		res.status(400).json({ error: err.message });
+		res.status(400).json({ status: 0, message: err.message });
 	}
 });
 
@@ -72,9 +77,13 @@ userRouter.get("/profile", userAuth, async (req, res) => {
 	try {
 		const loggedInUser = req.user;
 
-		res.json({ message: "User fetched Successfullly", data: loggedInUser });
+		res.json({
+			status: 1,
+			message: "User fetched Successfullly",
+			data: loggedInUser,
+		});
 	} catch (err) {
-		res.status(400).json({ error: err.message });
+		res.status(400).json({ status: 0, message: err.message });
 	}
 });
 

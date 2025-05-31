@@ -3,17 +3,28 @@ const validator = require("validator");
 const validateSignUpData = (req) => {
 	const { name, role, phone, emailId, location, password, address } = req.body;
 
+	if (!role) {
+		throw new Error("User role is required.");
+	}
+
 	if (!name) {
 		throw new Error("Name is required");
-	} else if (!phone) {
-		throw new Error("Phone is required");
-	} else if (!password) {
-		throw new Error("Password is required");
-	} else if (!address) {
+	}
+	if (!address) {
 		throw new Error("Address is required");
-	} else if (emailId && !validator.isEmail(emailId)) {
+	}
+
+	if (role === "needy" && !phone) {
+		throw new Error("Phone number is required for needy users.");
+	}
+
+	if (role === "donor" && (!emailId || !password)) {
+		throw new Error("Email and password are required for donors.");
+	}
+	if (role === "donor" && !validator.isEmail(emailId)) {
 		throw new Error("Invalid email address");
 	}
+
 	const allowedRoles = ["admin", "needy", "donor"];
 
 	const isRoleValid = allowedRoles.includes(role);

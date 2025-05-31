@@ -14,11 +14,19 @@ const userSchema = new mongoose.Schema(
 		},
 		password: {
 			type: String,
-			required: true,
+			// required: true,
 		},
 		phone: {
 			type: String,
-			required: true,
+			validate: {
+				validator: function (value) {
+					if (this.role === "needy" && !value) {
+						return false;
+					}
+					return true;
+				},
+				message: "Phone number is required for needy users.",
+			},
 		},
 		address: {
 			type: String,
@@ -29,10 +37,14 @@ const userSchema = new mongoose.Schema(
 			unique: true,
 			lowercase: true,
 			trim: true,
-			validate(value) {
-				if (!validator.isEmail(value)) {
-					throw new Error("Invalid email address");
-				}
+			validate: {
+				validator: function (value) {
+					if (this.role === "donor" && !validator.isEmail(value)) {
+						return false;
+					}
+					return true;
+				},
+				message: "Invalid Email address for donor.",
 			},
 		},
 		location: {

@@ -7,7 +7,7 @@ const jwt = require("jsonwebtoken");
 const otpRouter = express.Router();
 
 otpRouter.post("/send-otp", async (req, res) => {
-	const { phone, role } = req.body;
+	const { phone, role, loginSendOtp } = req.body;
 
 	try {
 		if (role !== "needy") {
@@ -16,6 +16,15 @@ otpRouter.post("/send-otp", async (req, res) => {
 
 		if (!isValidPhone(phone)) {
 			throw new Error("Invalid phone number format");
+		}
+
+		let user;
+
+		if (loginSendOtp) {
+			user = await User.findOne({ phone, role });
+			if (!user) {
+				throw new Error("User not found. Please sign up.");
+			}
 		}
 
 		await sendOtp(phone);
@@ -79,7 +88,7 @@ otpRouter.post("/verify-otp-login", async (req, res) => {
 			return res.status(400).json({ success: false, message: "Invalid OTP" });
 		}
 
-		// Check if user already exists
+		// Check if user exists
 		const user = await User.findOne({ phone });
 
 		if (!user) {

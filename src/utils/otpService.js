@@ -32,6 +32,7 @@ const verifyOtp = async (phone, otp) => {
 	const record = await Otp.findOne({ phone });
 
 	// if (!record || record.expiresAt < new Date()) return false;
+
 	if (!record) return false;
 	return record.otp === otp;
 };

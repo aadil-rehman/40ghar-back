@@ -1,7 +1,7 @@
 const express = require("express");
 const { sendOtp, verifyOtp } = require("../utils/otpService");
 const User = require("../models/user");
-const { validateSignUpData } = require("../utils/validation");
+const { validateSignUpData, isValidPhone } = require("../utils/validation");
 const jwt = require("jsonwebtoken");
 
 const otpRouter = express.Router();
@@ -12,6 +12,10 @@ otpRouter.post("/send-otp", async (req, res) => {
 	try {
 		if (role !== "needy") {
 			throw new Error("User not allowed to login via Otp");
+		}
+
+		if (!isValidPhone(phone)) {
+			throw new Error("Invalid phone number format");
 		}
 
 		await sendOtp(phone);

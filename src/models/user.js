@@ -34,8 +34,9 @@ const userSchema = new mongoose.Schema(
 						if (!value) return true; // skip if no value (only required for needy)
 
 						// Regex example: 10 digits, may start with optional +91 or 0
+						const sanitized = value.replace(/\s+/g, ""); // remove all spaces
 						const phoneRegex = /^(\+91|0)?[6-9]\d{9}$/;
-						return phoneRegex.test(value);
+						return phoneRegex.test(sanitized);
 					},
 					message: "Phone number format is invalid.",
 				},

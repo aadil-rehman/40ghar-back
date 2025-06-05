@@ -1,43 +1,40 @@
 const validator = require("validator");
 
+const allowedRoles = ["admin", "needy", "donor"];
+
+function isValidPhone(phone) {
+	const sanitized = phone.replace(/\s+/g, "");
+	const phoneRegex = /^(\+91|0)?[6-9]\d{9}$/;
+	return phoneRegex.test(sanitized);
+}
+
 const validateSignUpData = (req) => {
-	const { name, role, phone, emailId, location, password, address } = req.body;
+	let { name, role, phone, emailId, location, password, address } = req.body;
 
-	if (!role) {
-		throw new Error("User role is required.");
-	}
+	if (!role) throw new Error("User role is required.");
 
-	const allowedRoles = ["admin", "needy", "donor"];
-
-	const isRoleValid = allowedRoles.includes(role);
-
-	if (!isRoleValid) {
+	if (!allowedRoles.includes(role)) {
 		throw new Error("Role is not valid");
 	}
 
-	if (!name) {
-		throw new Error("Name is required");
-	}
-	if (!address) {
-		throw new Error("Address is required");
+	if (!name) throw new Error("Name is required");
+	if (!address) throw new Error("Address is required");
+
+	if (role === "needy") {
+		if (!phone) throw new Error("Phone number is required for needy users.");
+		if (!isValidPhone(phone)) throw new Error("Invalid phone number format.");
 	}
 
-	if (role === "needy" && !phone) {
-		throw new Error("Phone number is required for needy users.");
+	if (role === "donor") {
+		if (!emailId || !password) {
+			throw new Error("Email and password are required for donors.");
+		}
+		if (!validator.isEmail(emailId)) {
+			throw new Error("Invalid email address");
+		}
 	}
 
-	if (role === "donor" && (!emailId || !password)) {
-		throw new Error("Email and password are required for donors.");
-	}
-	if (role === "donor" && !validator.isEmail(emailId)) {
-		throw new Error("Invalid email address");
-	}
-
-	if (
-		!location ||
-		!location.coordinates ||
-		!Array.isArray(location.coordinates)
-	) {
+	if (!location?.coordinates || !Array.isArray(location.coordinates)) {
 		throw new Error("Location with coordinates is required");
 	}
 
@@ -50,4 +47,4 @@ const validateSignUpData = (req) => {
 	}
 };
 
-module.exports = { validateSignUpData };
+module.exports = { validateSignUpData, isValidPhone };

@@ -18,12 +18,15 @@ otpRouter.post("/send-otp", async (req, res) => {
 			throw new Error("Invalid phone number format");
 		}
 
-		let user;
+		const user = await User.findOne({ phone, role });
 
 		if (loginSendOtp) {
-			user = await User.findOne({ phone, role });
 			if (!user) {
 				throw new Error("User not found. Please sign up.");
+			}
+		} else {
+			if (user) {
+				throw new Error("User already exists. Please login");
 			}
 		}
 
